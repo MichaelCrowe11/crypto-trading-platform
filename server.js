@@ -22,6 +22,7 @@ const TradingEngine = require('./src/trading/TradingEngine');
 const ExchangeManager = require('./src/exchanges/ExchangeManager');
 const WalletManager = require('./src/wallet/WalletManager');
 const MarketDataService = require('./src/services/MarketDataService');
+const User = require('./src/models/User');
 
 // Initialize Express app
 const app = express();
@@ -92,15 +93,21 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/crypto-tr
     logger.error('MongoDB connection error:', err);
 });
 
-// Redis connection for caching
-const redisClient = Redis.createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-});
+// Redis connection for caching (optional)
+let redisClient = null;
+if (process.env.REDIS_URL || process.env.NODE_ENV === 'development') {
+    redisClient = Redis.createClient({
+        url: process.env.REDIS_URL || 'redis://localhost:6379'
+    });
 
-redisClient.on('error', (err) => logger.error('Redis Client Error', err));
-redisClient.connect().then(() => {
-    logger.info('Redis connected successfully');
-});
+    redisClient.on('error', (err) => logger.error('Redis Client Error', err));
+    redisClient.connect().then(() => {
+        logger.info('Redis connected successfully');
+    }).catch(err => {
+        logger.warn('Redis connection failed, continuing without cache:', err.message);
+        redisClient = null;
+    });
+}
 
 // Initialize services
 const exchangeManager = new ExchangeManager();
