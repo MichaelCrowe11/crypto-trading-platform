@@ -1,4 +1,4 @@
-// Crow-e Crypto - Simple Wallet Connection (No API Keys Required)
+// CryptoCrowe - Simple Wallet Connection (No API Keys Required)
 
 // This file provides wallet connections that work WITHOUT any API keys
 

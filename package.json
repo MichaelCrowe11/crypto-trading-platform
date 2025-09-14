@@ -1,7 +1,7 @@
 {
-  "name": "crowe-crypto",
+  "name": "cryptocrowe",
   "version": "1.0.0",
-  "description": "Crow-e Crypto - Autonomous Trading Platform",
+  "description": "CryptoCrowe - Autonomous Trading Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

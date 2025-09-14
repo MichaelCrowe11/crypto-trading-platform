@@ -1,4 +1,4 @@
-// Crow-e Crypto - Main Application JavaScript
+// CryptoCrowe - Main Application JavaScript
 
 // Global state
 let currentUser = null;
@@ -10,7 +10,7 @@ let provider = null;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🦅 Crow-e Crypto initializing...');
+    console.log('🦅 CryptoCrowe initializing...');
 
     // Hide loading screen
     setTimeout(() => {
@@ -60,19 +60,28 @@ async function checkWalletConnection() {
     }
 }
 
-// Authentication (simplified - no Supabase required for demo)
+// Authentication
 async function checkAuth() {
-    // Check localStorage for demo auth
-    const demoUser = localStorage.getItem('demoUser');
-    if (demoUser) {
-        currentUser = JSON.parse(demoUser);
-        updateAuthUI(true);
+    // Check for authenticated user
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        // Verify token with backend
+        try {
+            const response = await fetch('/api/auth/verify', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                currentUser = await response.json();
+                updateAuthUI(true);
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
     }
 }
 
 async function login(email, password) {
     try {
-        // Demo login - in production, use actual auth
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -82,23 +91,24 @@ async function login(email, password) {
         const data = await response.json();
         if (data.success) {
             currentUser = data.user;
-            localStorage.setItem('demoUser', JSON.stringify(currentUser));
+            localStorage.setItem('authToken', data.token);
             updateAuthUI(true);
             showToast('Login successful', 'success');
             closeModal('loginModal');
+        } else {
+            showToast(data.message || 'Login failed', 'error');
         }
     } catch (error) {
-        showToast(error.message, 'error');
+        showToast('Login service unavailable', 'error');
     }
 }
 
 async function signup(email, password) {
-    // Demo signup
-    showToast('Demo mode - use any email/password to login', 'info');
+    showToast('Signup requires authentication service configuration', 'info');
 }
 
 async function logout() {
-    localStorage.removeItem('demoUser');
+    localStorage.removeItem('authToken');
     currentUser = null;
     updateAuthUI(false);
     showToast('Logged out successfully', 'info');
@@ -458,8 +468,8 @@ if (orderForm) {
         };
 
         try {
-            // Demo trade execution
-            showToast('Order placed successfully (Demo)', 'success');
+            // Trade execution requires exchange API
+            showToast('Trading requires exchange API configuration', 'info');
             addActivityItem(`Order placed: Buy ${formData.amount} BTC`);
         } catch (error) {
             showToast(error.message, 'error');
@@ -607,14 +617,14 @@ function refreshMarkets() {
     showToast('Markets refreshed', 'success');
 }
 
-function startDemo() {
+function startTrading() {
     if (!walletAddress) {
         showToast('Please connect your wallet first', 'warning');
         return;
     }
 
-    showToast('Demo mode activated', 'success');
-    addActivityItem('Demo trading started with $10,000 virtual balance');
+    showToast('Trading requires exchange API configuration', 'info');
+    addActivityItem('Configure exchange APIs to start trading');
 }
 
 function showGuide() {

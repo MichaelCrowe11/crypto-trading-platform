@@ -1,4 +1,4 @@
-// Crow-e Crypto - Production Server
+// CryptoCrowe - Production Server
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -32,7 +32,7 @@ app.get('/health', (req, res) => {
     res.json({
         status: 'healthy',
         timestamp: new Date().toISOString(),
-        app: 'Crow-e Crypto',
+        app: 'CryptoCrowe',
         version: '1.0.0'
     });
 });
@@ -40,7 +40,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.get('/api/status', (req, res) => {
     res.json({
-        message: 'Crow-e Crypto API is running',
+        message: 'CryptoCrowe API is running',
         timestamp: new Date().toISOString(),
         features: [
             'Multi-wallet support',
@@ -51,33 +51,33 @@ app.get('/api/status', (req, res) => {
     });
 });
 
-// Mock market data
-app.get('/api/market/prices', (req, res) => {
-    const prices = {
-        'BTC': { price: 45234.56, change: 2.34, volume: 1200000000 },
-        'ETH': { price: 2456.78, change: -1.23, volume: 800000000 },
-        'BNB': { price: 345.67, change: 0.89, volume: 150000000 },
-        'SOL': { price: 98.76, change: 5.67, volume: 45000000 },
-        'ADA': { price: 0.456, change: -2.34, volume: 25000000 }
-    };
-    res.json(prices);
+// Real market data endpoint - requires API keys
+app.get('/api/market/prices', async (req, res) => {
+    try {
+        // Return empty object if no API configured
+        // In production, integrate with CoinGecko/CoinMarketCap/etc
+        res.json({});
+    } catch (error) {
+        res.status(500).json({ error: 'Market data unavailable' });
+    }
 });
 
-// Mock auth
+// Authentication endpoint - requires Supabase or other auth provider
 app.post('/api/auth/login', (req, res) => {
-    res.json({
-        success: true,
-        token: 'demo-token',
-        user: { id: 'demo-user', email: 'demo@crowecrypto.com' }
+    // Requires proper authentication setup
+    res.status(503).json({
+        success: false,
+        message: 'Authentication service not configured'
     });
 });
 
-// Mock wallet
+// Wallet connection endpoint
 app.post('/api/wallet/connect', (req, res) => {
     const { walletAddress, walletType } = req.body;
+    // Real wallet connection handled client-side
     res.json({
         success: true,
-        wallet: { address: walletAddress, type: walletType, balance: '1.5 ETH' }
+        wallet: { address: walletAddress, type: walletType }
     });
 });
 
@@ -88,6 +88,6 @@ app.get('*', (req, res) => {
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🦅 Crow-e Crypto server running on port ${PORT}`);
+    console.log(`🦅 CryptoCrowe server running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
 });
