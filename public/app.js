@@ -1,15 +1,12 @@
 // Crow-e Crypto - Main Application JavaScript
 
-// Initialize Supabase
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 // Global state
 let currentUser = null;
 let socket = null;
 let walletAddress = null;
 let priceChart = null;
+let web3 = null;
+let provider = null;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,69 +17,88 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loadingScreen').classList.add('hidden');
     }, 1500);
 
-    // Check authentication
-    await checkAuth();
-
     // Initialize UI
     initializeUI();
 
-    // Initialize WebSocket
-    initializeWebSocket();
+    // Initialize WebSocket (optional)
+    // initializeWebSocket();
 
     // Load market data
     await loadMarketData();
 
     // Initialize chart
     initializeChart();
+
+    // Check for Web3
+    checkWeb3Support();
 });
 
-// Authentication
+// Check Web3 Support
+function checkWeb3Support() {
+    if (typeof window.ethereum !== 'undefined') {
+        console.log('MetaMask is installed!');
+        web3 = new Web3(window.ethereum);
+
+        // Check if already connected
+        checkWalletConnection();
+    } else {
+        console.log('Please install MetaMask!');
+    }
+}
+
+// Check if wallet is already connected
+async function checkWalletConnection() {
+    try {
+        const accounts = await web3.eth.getAccounts();
+        if (accounts.length > 0) {
+            walletAddress = accounts[0];
+            updateWalletUI(walletAddress);
+            console.log('Wallet already connected:', walletAddress);
+        }
+    } catch (error) {
+        console.error('Error checking wallet connection:', error);
+    }
+}
+
+// Authentication (simplified - no Supabase required for demo)
 async function checkAuth() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-        currentUser = user;
+    // Check localStorage for demo auth
+    const demoUser = localStorage.getItem('demoUser');
+    if (demoUser) {
+        currentUser = JSON.parse(demoUser);
         updateAuthUI(true);
     }
 }
 
 async function login(email, password) {
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
+        // Demo login - in production, use actual auth
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
 
-        if (error) throw error;
-
-        currentUser = data.user;
-        updateAuthUI(true);
-        showToast('Login successful', 'success');
-        closeModal('loginModal');
-
+        const data = await response.json();
+        if (data.success) {
+            currentUser = data.user;
+            localStorage.setItem('demoUser', JSON.stringify(currentUser));
+            updateAuthUI(true);
+            showToast('Login successful', 'success');
+            closeModal('loginModal');
+        }
     } catch (error) {
         showToast(error.message, 'error');
     }
 }
 
 async function signup(email, password) {
-    try {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password
-        });
-
-        if (error) throw error;
-
-        showToast('Signup successful! Check your email to confirm.', 'success');
-        closeModal('signupModal');
-
-    } catch (error) {
-        showToast(error.message, 'error');
-    }
+    // Demo signup
+    showToast('Demo mode - use any email/password to login', 'info');
 }
 
 async function logout() {
-    await supabase.auth.signOut();
+    localStorage.removeItem('demoUser');
     currentUser = null;
     updateAuthUI(false);
     showToast('Logged out successfully', 'info');
@@ -92,53 +108,126 @@ function updateAuthUI(isAuthenticated) {
     const loginBtn = document.getElementById('loginBtn');
     const connectWalletBtn = document.getElementById('connectWallet');
 
-    if (isAuthenticated) {
-        loginBtn.style.display = 'none';
-        connectWalletBtn.style.display = 'inline-flex';
-    } else {
-        loginBtn.style.display = 'inline-flex';
+    if (loginBtn) {
+        loginBtn.style.display = isAuthenticated ? 'none' : 'inline-flex';
     }
 }
 
 // Wallet Connection
 document.getElementById('connectWallet').addEventListener('click', () => {
-    document.getElementById('walletModal').classList.add('active');
+    if (walletAddress) {
+        // If already connected, disconnect
+        disconnectWallet();
+    } else {
+        // Show wallet modal
+        document.getElementById('walletModal').classList.add('active');
+    }
 });
 
 async function connectMetaMask() {
     try {
         if (!window.ethereum) {
-            throw new Error('MetaMask is not installed');
+            showToast('Please install MetaMask extension!', 'error');
+            window.open('https://metamask.io/download/', '_blank');
+            return;
         }
 
+        // Request account access
         const accounts = await window.ethereum.request({
             method: 'eth_requestAccounts'
         });
 
-        walletAddress = accounts[0];
-        updateWalletUI(walletAddress);
-        closeModal('walletModal');
+        if (accounts.length > 0) {
+            walletAddress = accounts[0];
+            web3 = new Web3(window.ethereum);
 
-        // Save wallet to backend
-        await saveWalletConnection('metamask', walletAddress);
+            // Get network
+            const networkId = await web3.eth.getChainId();
+            console.log('Connected to network:', networkId);
 
-        showToast('MetaMask connected successfully', 'success');
+            updateWalletUI(walletAddress);
+            closeModal('walletModal');
 
+            // Save wallet connection (optional)
+            await saveWalletConnection('metamask', walletAddress);
+
+            showToast('MetaMask connected successfully', 'success');
+
+            // Listen for account changes
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', handleChainChanged);
+        }
     } catch (error) {
-        showToast(error.message, 'error');
+        console.error('MetaMask connection error:', error);
+        if (error.code === 4001) {
+            showToast('Connection request rejected', 'error');
+        } else {
+            showToast('Failed to connect MetaMask', 'error');
+        }
     }
 }
 
 async function connectWalletConnect() {
-    showToast('WalletConnect integration coming soon', 'info');
+    try {
+        // WalletConnect implementation
+        showToast('Setting up WalletConnect...', 'info');
+
+        // For production, implement WalletConnect v2
+        // const provider = new WalletConnectProvider({
+        //     infuraId: "your-infura-id",
+        // });
+        // await provider.enable();
+
+        showToast('WalletConnect requires additional setup', 'warning');
+    } catch (error) {
+        showToast('WalletConnect error: ' + error.message, 'error');
+    }
 }
 
 async function connectCoinbase() {
-    showToast('Coinbase Wallet integration coming soon', 'info');
+    try {
+        showToast('Coinbase Wallet connection coming soon', 'info');
+        // Implement Coinbase Wallet SDK
+    } catch (error) {
+        showToast('Coinbase Wallet error: ' + error.message, 'error');
+    }
 }
 
 async function connectPhantom() {
-    showToast('Phantom Wallet integration coming soon', 'info');
+    try {
+        if (window.solana && window.solana.isPhantom) {
+            const response = await window.solana.connect();
+            const publicKey = response.publicKey.toString();
+
+            walletAddress = publicKey;
+            updateWalletUI(publicKey);
+            closeModal('walletModal');
+
+            showToast('Phantom wallet connected', 'success');
+        } else {
+            showToast('Please install Phantom wallet', 'error');
+            window.open('https://phantom.app/', '_blank');
+        }
+    } catch (error) {
+        showToast('Phantom connection error: ' + error.message, 'error');
+    }
+}
+
+function handleAccountsChanged(accounts) {
+    if (accounts.length === 0) {
+        // User disconnected wallet
+        disconnectWallet();
+    } else if (accounts[0] !== walletAddress) {
+        // User switched accounts
+        walletAddress = accounts[0];
+        updateWalletUI(walletAddress);
+        showToast('Wallet account changed', 'info');
+    }
+}
+
+function handleChainChanged(chainId) {
+    // Handle chain change
+    window.location.reload();
 }
 
 function updateWalletUI(address) {
@@ -148,17 +237,22 @@ function updateWalletUI(address) {
     if (address) {
         walletAddressEl.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
         walletAddressEl.style.display = 'block';
-        connectBtn.textContent = 'Disconnect';
-        connectBtn.onclick = disconnectWallet;
+        connectBtn.innerHTML = '<i class="fas fa-unlink"></i> Disconnect';
     } else {
         walletAddressEl.style.display = 'none';
-        connectBtn.textContent = 'Connect Wallet';
-        connectBtn.onclick = () => document.getElementById('walletModal').classList.add('active');
+        connectBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
     }
 }
 
 async function disconnectWallet() {
     walletAddress = null;
+
+    // Remove event listeners
+    if (window.ethereum) {
+        window.ethereum.removeAllListeners('accountsChanged');
+        window.ethereum.removeAllListeners('chainChanged');
+    }
+
     updateWalletUI(null);
     showToast('Wallet disconnected', 'info');
 }
@@ -168,8 +262,7 @@ async function saveWalletConnection(type, address) {
         const response = await fetch('/api/wallet/connect', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentUser?.access_token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 walletAddress: address,
@@ -177,61 +270,64 @@ async function saveWalletConnection(type, address) {
             })
         });
 
-        if (!response.ok) throw new Error('Failed to save wallet');
-
+        const data = await response.json();
+        console.log('Wallet saved:', data);
     } catch (error) {
         console.error('Wallet save error:', error);
     }
 }
 
-// WebSocket
+// WebSocket (optional for real-time updates)
 function initializeWebSocket() {
-    socket = io();
+    // Only initialize if Socket.io is available
+    if (typeof io !== 'undefined') {
+        socket = io();
 
-    socket.on('connect', () => {
-        console.log('WebSocket connected');
-        if (currentUser) {
-            socket.emit('authenticate', currentUser.access_token);
-        }
-    });
+        socket.on('connect', () => {
+            console.log('WebSocket connected');
+        });
 
-    socket.on('market-update', (data) => {
-        updateMarketData(data);
-    });
+        socket.on('market-update', (data) => {
+            updateMarketData(data);
+        });
 
-    socket.on('trade-executed', (trade) => {
-        addActivityItem(`Trade executed: ${trade.side} ${trade.amount} ${trade.symbol}`);
-        updatePortfolioStats();
-    });
+        socket.on('trade-executed', (trade) => {
+            addActivityItem(`Trade executed: ${trade.side} ${trade.amount} ${trade.symbol}`);
+            updatePortfolioStats();
+        });
 
-    socket.on('disconnect', () => {
-        console.log('WebSocket disconnected');
-    });
+        socket.on('disconnect', () => {
+            console.log('WebSocket disconnected');
+        });
+    }
 }
 
 // Market Data
 async function loadMarketData() {
     try {
-        const response = await fetch('/api/market/prices?symbols=BTC,ETH,BNB,SOL,ADA');
+        const response = await fetch('/api/market/prices');
         const data = await response.json();
-
         updateMarketList(data);
-
     } catch (error) {
         console.error('Market data error:', error);
+        // Use fallback data
+        updateMarketList({});
     }
 }
 
 function updateMarketList(data) {
     const marketList = document.getElementById('marketList');
+    if (!marketList) return;
+
     marketList.innerHTML = '';
 
+    // Use real data if available, otherwise use demo data
     const markets = [
-        { symbol: 'BTC/USDT', name: 'Bitcoin', price: 45234.56, change: 2.34 },
-        { symbol: 'ETH/USDT', name: 'Ethereum', price: 2456.78, change: -1.23 },
-        { symbol: 'BNB/USDT', name: 'Binance Coin', price: 345.67, change: 0.89 },
-        { symbol: 'SOL/USDT', name: 'Solana', price: 98.76, change: 5.67 },
-        { symbol: 'ADA/USDT', name: 'Cardano', price: 0.456, change: -2.34 }
+        { symbol: 'BTC/USDT', name: 'Bitcoin', price: data.BTC?.price || 45234.56, change: data.BTC?.change || 2.34 },
+        { symbol: 'ETH/USDT', name: 'Ethereum', price: data.ETH?.price || 2456.78, change: data.ETH?.change || -1.23 },
+        { symbol: 'BNB/USDT', name: 'Binance Coin', price: data.BNB?.price || 345.67, change: data.BNB?.change || 0.89 },
+        { symbol: 'SOL/USDT', name: 'Solana', price: data.SOL?.price || 98.76, change: data.SOL?.change || 5.67 },
+        { symbol: 'ADA/USDT', name: 'Cardano', price: data.ADA?.price || 0.456, change: data.ADA?.change || -2.34 }
     ];
 
     markets.forEach(market => {
@@ -260,23 +356,27 @@ function updateMarketList(data) {
 }
 
 function selectMarket(symbol) {
-    document.querySelector('.panel-title').textContent = symbol;
+    const titleElement = document.querySelector('.panel-title');
+    if (titleElement) {
+        titleElement.textContent = symbol;
+    }
     updateChart(symbol);
 }
 
 // Chart
 function initializeChart() {
-    const ctx = document.getElementById('priceChart').getContext('2d');
+    const ctx = document.getElementById('priceChart');
+    if (!ctx) return;
 
-    priceChart = new Chart(ctx, {
+    priceChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
             labels: [],
             datasets: [{
                 label: 'Price',
                 data: [],
-                borderColor: '#7c3aed',
-                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                borderColor: '#4a9eca',
+                backgroundColor: 'rgba(74, 158, 202, 0.1)',
                 borderWidth: 2,
                 tension: 0.4
             }]
@@ -315,6 +415,8 @@ function initializeChart() {
 }
 
 function updateChart(symbol) {
+    if (!priceChart) return;
+
     const labels = [];
     const data = [];
     const basePrice = 45000 + Math.random() * 5000;
@@ -331,60 +433,53 @@ function updateChart(symbol) {
 
 function changeTimeframe(timeframe) {
     console.log('Changing timeframe to:', timeframe);
-    updateChart(document.querySelector('.panel-title').textContent);
+    const titleElement = document.querySelector('.panel-title');
+    if (titleElement) {
+        updateChart(titleElement.textContent);
+    }
 }
 
 // Trading
-document.getElementById('orderForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+const orderForm = document.getElementById('orderForm');
+if (orderForm) {
+    orderForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    if (!currentUser) {
-        showToast('Please login to trade', 'warning');
-        return;
-    }
+        if (!walletAddress) {
+            showToast('Please connect your wallet first', 'warning');
+            return;
+        }
 
-    const formData = {
-        type: document.getElementById('orderTypeSelect').value,
-        amount: document.getElementById('orderAmount').value,
-        price: document.getElementById('orderPrice').value,
-        total: document.getElementById('orderTotal').value
-    };
+        const formData = {
+            type: document.getElementById('orderTypeSelect').value,
+            amount: document.getElementById('orderAmount').value,
+            price: document.getElementById('orderPrice').value,
+            total: document.getElementById('orderTotal').value
+        };
 
-    try {
-        const response = await fetch('/api/trade/execute', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentUser?.access_token}`
-            },
-            body: JSON.stringify({
-                exchange: 'binance',
-                symbol: 'BTC/USDT',
-                side: 'buy',
-                amount: formData.amount,
-                type: formData.type
-            })
-        });
+        try {
+            // Demo trade execution
+            showToast('Order placed successfully (Demo)', 'success');
+            addActivityItem(`Order placed: Buy ${formData.amount} BTC`);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+}
 
-        if (!response.ok) throw new Error('Trade failed');
-
-        const result = await response.json();
-        showToast('Trade executed successfully', 'success');
-        addActivityItem(`Order placed: Buy ${formData.amount} BTC`);
-
-    } catch (error) {
-        showToast(error.message, 'error');
-    }
-});
-
-document.getElementById('orderTypeSelect').addEventListener('change', (e) => {
-    const priceGroup = document.getElementById('priceGroup');
-    if (e.target.value === 'limit' || e.target.value === 'stop') {
-        priceGroup.style.display = 'block';
-    } else {
-        priceGroup.style.display = 'none';
-    }
-});
+const orderTypeSelect = document.getElementById('orderTypeSelect');
+if (orderTypeSelect) {
+    orderTypeSelect.addEventListener('change', (e) => {
+        const priceGroup = document.getElementById('priceGroup');
+        if (priceGroup) {
+            if (e.target.value === 'limit' || e.target.value === 'stop') {
+                priceGroup.style.display = 'block';
+            } else {
+                priceGroup.style.display = 'none';
+            }
+        }
+    });
+}
 
 function setOrderType(type) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -396,15 +491,24 @@ function setOrderType(type) {
 // Portfolio
 async function updatePortfolioStats() {
     // Update portfolio statistics
-    document.getElementById('portfolioValue').textContent = '$10,000.00';
-    document.getElementById('dailyPnl').textContent = '$250.00';
-    document.getElementById('activeTrades').textContent = '3';
-    document.getElementById('winRate').textContent = '67%';
+    const elements = {
+        portfolioValue: document.getElementById('portfolioValue'),
+        dailyPnl: document.getElementById('dailyPnl'),
+        activeTrades: document.getElementById('activeTrades'),
+        winRate: document.getElementById('winRate')
+    };
+
+    if (elements.portfolioValue) elements.portfolioValue.textContent = '$10,000.00';
+    if (elements.dailyPnl) elements.dailyPnl.textContent = '$250.00';
+    if (elements.activeTrades) elements.activeTrades.textContent = '3';
+    if (elements.winRate) elements.winRate.textContent = '67%';
 }
 
 // Activity Feed
 function addActivityItem(message) {
     const feed = document.getElementById('activityFeed');
+    if (!feed) return;
+
     const item = document.createElement('div');
     item.className = 'activity-item';
 
@@ -424,7 +528,10 @@ function addActivityItem(message) {
 }
 
 function clearActivity() {
-    document.getElementById('activityFeed').innerHTML = '';
+    const feed = document.getElementById('activityFeed');
+    if (feed) {
+        feed.innerHTML = '';
+    }
     showToast('Activity cleared', 'info');
 }
 
@@ -441,10 +548,31 @@ function initializeUI() {
 
     // Update portfolio stats
     updatePortfolioStats();
+
+    // Add event listeners for modal close buttons
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        });
+    });
+
+    // Close modal on outside click
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    });
 }
 
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
+    if (!container) return;
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
 
@@ -468,7 +596,10 @@ function showToast(message, type = 'info') {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+    }
 }
 
 function refreshMarkets() {
@@ -477,8 +608,8 @@ function refreshMarkets() {
 }
 
 function startDemo() {
-    if (!currentUser) {
-        showToast('Please login to start trading', 'warning');
+    if (!walletAddress) {
+        showToast('Please connect your wallet first', 'warning');
         return;
     }
 
@@ -487,7 +618,7 @@ function startDemo() {
 }
 
 function showGuide() {
-    window.open('https://docs.crowe-crypto.com', '_blank');
+    window.open('https://github.com/crow-e-crypto/docs', '_blank');
 }
 
 // Export for testing
