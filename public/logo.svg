@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!-- Dark background -->
+  <rect width="400" height="400" fill="#2a2a2a"/>
+
+  <!-- Geometric Crow Logo -->
+  <g transform="translate(200,200)">
+    <!-- Hexagon base shape -->
+    <path d="M -80,-46 L -80,46 L 0,92 L 80,46 L 80,-46 L 0,-92 Z"
+          fill="#1e5f8e" stroke="#4a9eca" stroke-width="3"/>
+
+    <!-- Inner geometric crow -->
+    <!-- Head/beak section -->
+    <path d="M -60,-30 L -20,-50 L 10,-40 L -30,-20 Z"
+          fill="#2b7fb8"/>
+
+    <!-- Body lower -->
+    <path d="M -30,-20 L 10,-40 L 40,0 L 20,40 L -20,50 L -50,20 Z"
+          fill="#3d5a99"/>
+
+    <!-- Wing section -->
+    <path d="M 10,-40 L 40,-20 L 60,10 L 40,0 Z"
+          fill="#4a9eca"/>
+
+    <!-- Tail/back section -->
+    <path d="M 40,0 L 60,10 L 50,35 L 20,40 Z"
+          fill="#1e5f8e"/>
+
+    <!-- Eye dot -->
+    <circle cx="-25" cy="-35" r="4" fill="#ffffff"/>
+
+    <!-- Sparkle effect -->
+    <g transform="translate(70,-60)">
+      <path d="M 0,-15 L 5,-5 L 15,0 L 5,5 L 0,15 L -5,5 L -15,0 L -5,-5 Z"
+            fill="#4dd0e1" opacity="0.9"/>
+    </g>
+  </g>
+
+  <!-- Gradient overlay for depth -->
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4dd0e1;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#1e5f8e;stop-opacity:0.3" />
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#blueGradient)" opacity="0.5"/>
+</svg>
