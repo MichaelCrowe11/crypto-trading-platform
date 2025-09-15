@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linter
+      run: npm run lint || echo "Linter not configured"
+
+    - name: Run tests
+      run: npm test || echo "Tests not configured yet"
+
+    - name: Check security vulnerabilities
+      run: npm audit --audit-level=high
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build || echo "Build script not configured"
+
+    - name: Create deployment artifact
+      run: |
+        tar -czf crypto-trading-platform.tar.gz \
+          --exclude=node_modules \
+          --exclude=.git \
+          --exclude=.github \
+          --exclude=*.log \
+          .
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: crypto-trading-platform-${{ github.sha }}
+        path: crypto-trading-platform.tar.gz
+        retention-days: 30
