@@ -55,3 +55,17 @@ data/
 .cache/
 tmp/
 temp/
+
+# Trading platform specific
+server-original.js
+server-enhanced.js
+trading.log
+error.log
+
+# API keys and sensitive data
+config/keys.js
+config/production.json
+config/development.json
+
+# Redis dump
+dump.rdb
