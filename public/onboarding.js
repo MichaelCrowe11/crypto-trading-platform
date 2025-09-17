@@ -117,14 +117,14 @@ class OnboardingTour {
                 </div>
 
                 <div class="welcome-actions">
-                    <button class="btn btn-primary" onclick="onboardingTour.start()">
+                    <button class="btn btn-primary" id="startTourBtn">
                         <i class="fas fa-play"></i> Start Tour
                     </button>
-                    <button class="btn btn-outline" onclick="onboardingTour.skip()">
+                    <button class="btn btn-outline" id="skipTourBtn">
                         Skip for now
                     </button>
                 </div>
-                <button class="close-welcome" onclick="onboardingTour.skip()" aria-label="Close">
+                <button class="close-welcome" id="closeWelcomeBtn" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
 
@@ -138,6 +138,21 @@ class OnboardingTour {
         `;
 
         document.body.appendChild(welcomeModal);
+
+        // Add event listeners to buttons
+        const startBtn = document.getElementById('startTourBtn');
+        const skipBtn = document.getElementById('skipTourBtn');
+        const closeBtn = document.getElementById('closeWelcomeBtn');
+
+        if (startBtn) {
+            startBtn.addEventListener('click', () => this.start());
+        }
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => this.skip());
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.skip());
+        }
 
         // Add entrance animation
         setTimeout(() => {
@@ -472,13 +487,15 @@ class OnboardingTour {
 // Initialize onboarding when page loads
 let onboardingTour;
 document.addEventListener('DOMContentLoaded', () => {
-    onboardingTour = new OnboardingTour();
+    // Create global instance
+    window.onboardingTour = new OnboardingTour();
+    onboardingTour = window.onboardingTour;
 
     // Add global ESC key handler
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const welcomeModal = document.querySelector('.onboarding-welcome');
-            if (welcomeModal) {
+            if (welcomeModal && onboardingTour) {
                 onboardingTour.skip();
             }
         }
