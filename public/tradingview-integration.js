@@ -13,16 +13,8 @@ class TradingViewChart {
     }
 
     init() {
-        // Add TradingView widget script
-        if (!window.TradingView) {
-            const script = document.createElement('script');
-            script.src = 'https://s3.tradingview.com/tv.js';
-            script.async = true;
-            script.onload = () => this.createWidget();
-            document.head.appendChild(script);
-        } else {
-            this.createWidget();
-        }
+        // Create the TradingView widget immediately using the embed approach
+        this.createWidget();
     }
 
     createWidget() {
@@ -32,57 +24,50 @@ class TradingViewChart {
         // Clear existing content
         container.innerHTML = '';
 
-        // Create unique widget container
+        // Create TradingView widget using iframe embed
         const widgetContainer = document.createElement('div');
-        widgetContainer.id = `tradingview_${Date.now()}`;
+        widgetContainer.className = 'tradingview-widget-container';
         widgetContainer.style.height = '100%';
+        widgetContainer.style.width = '100%';
+
+        // Use TradingView's lightweight embed
+        widgetContainer.innerHTML = `
+            <div id="tradingview_widget" style="height: 100%; width: 100%;"></div>
+            <script type="text/javascript">
+                (function() {
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.async = true;
+                    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+                    script.innerHTML = JSON.stringify({
+                        "autosize": true,
+                        "symbol": "${this.symbol}",
+                        "interval": "${this.interval}",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "en",
+                        "enable_publishing": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_widget",
+                        "backgroundColor": "rgba(10, 10, 10, 1)",
+                        "gridColor": "rgba(26, 26, 26, 0.5)",
+                        "hide_side_toolbar": false,
+                        "studies": [
+                            "RSI@tv-basicstudies",
+                            "MASimple@tv-basicstudies",
+                            "MACD@tv-basicstudies"
+                        ],
+                        "show_popup_button": true,
+                        "popup_width": "1000",
+                        "popup_height": "650"
+                    });
+                    document.getElementById('tradingview_widget').appendChild(script);
+                })();
+            </script>
+        `;
+
         container.appendChild(widgetContainer);
-
-        // Initialize TradingView widget
-        this.widget = new TradingView.widget({
-            width: '100%',
-            height: '100%',
-            symbol: this.symbol,
-            interval: this.interval,
-            timezone: 'Etc/UTC',
-            theme: this.theme,
-            style: '1', // Candlestick chart
-            locale: 'en',
-            toolbar_bg: '#0a0a0a',
-            enable_publishing: false,
-            allow_symbol_change: true,
-            container_id: widgetContainer.id,
-
-            // Features
-            hide_side_toolbar: false,
-            withdateranges: true,
-            hide_volume: false,
-
-            // Studies to load
-            studies: [
-                'MASimple@tv-basicstudies',
-                'RSI@tv-basicstudies',
-                'MACD@tv-basicstudies'
-            ],
-
-            // Custom colors
-            overrides: {
-                'paneProperties.background': '#0a0a0a',
-                'paneProperties.vertGridProperties.color': '#1a1a1a',
-                'paneProperties.horzGridProperties.color': '#1a1a1a',
-                'symbolWatermarkProperties.transparency': 90,
-                'scalesProperties.textColor': '#AAA',
-                'mainSeriesProperties.candleStyle.wickUpColor': '#10b981',
-                'mainSeriesProperties.candleStyle.wickDownColor': '#ef4444',
-                'mainSeriesProperties.candleStyle.upColor': '#10b981',
-                'mainSeriesProperties.candleStyle.downColor': '#ef4444',
-                'mainSeriesProperties.candleStyle.borderUpColor': '#10b981',
-                'mainSeriesProperties.candleStyle.borderDownColor': '#ef4444'
-            },
-
-            // Saved data
-            saved_data: localStorage.getItem('tradingview_chart_data')
-        });
 
         // Add custom controls
         this.addCustomControls(container);

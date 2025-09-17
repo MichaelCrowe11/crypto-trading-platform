@@ -1009,7 +1009,7 @@
     <script src="cryptocrowe.js"></script>
     <script src="onboarding.js"></script>
     <script src="button-handlers.js"></script>
-    <script src="tradingview-integration.js"></script>
+    <script src="tradingview-simple.js"></script>
 
     <!-- Initialize Enhanced Features -->
     <script>
@@ -1019,7 +1019,13 @@
             const chartContainer = document.getElementById('priceChart');
             if (chartContainer) {
                 chartContainer.innerHTML = '<div id="tradingview_main" style="height: 100%;"></div>';
-                initializeTradingView('tradingview_main', 'BINANCE:BTCUSDT');
+                // Use the new simple TradingView implementation
+                if (typeof initializeTradingViewChart === 'function') {
+                    initializeTradingViewChart('tradingview_main', 'BINANCE:BTCUSDT');
+                } else {
+                    console.log('TradingView not loaded, using canvas fallback');
+                    createSimplePriceChart('priceChart');
+                }
             }
 
             // Add animation classes to elements
