@@ -22,6 +22,7 @@ const MarketDataService = require('./src/services/MarketDataService');
 const PortfolioService = require('./src/services/PortfolioService');
 const StrategyManager = require('./src/services/StrategyManager');
 const NotificationService = require('./src/services/NotificationService');
+const HealthCheckService = require('./src/services/HealthCheckService');
 
 // Initialize Express app
 const app = express();
@@ -560,6 +561,16 @@ app.get('*', (req, res) => {
 async function startServer() {
     try {
         await connectDatabases();
+
+        // Initialize health check service
+        const healthCheckService = new HealthCheckService(app, {
+            exchangeManager,
+            tradingEngine,
+            marketDataService,
+            portfolioService
+        });
+        healthCheckService.initialize();
+        app.locals.io = io;
 
         server.listen(PORT, '0.0.0.0', () => {
             logger.info(`CryptoCrowe server running on port ${PORT}`);
