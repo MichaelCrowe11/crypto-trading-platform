@@ -1,0 +1,28 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm ci --production=false"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[[services]]
+name = "web"
+internal_port = 3000
+protocol = "tcp"
+
+[[services.ports]]
+port = 443
+handlers = ["tls", "http"]
+
+[[services.ports]]
+port = 80
+handlers = ["http"]
+force_https = true
+
+[env]
+NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "false"
