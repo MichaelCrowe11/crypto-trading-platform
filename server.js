@@ -26,6 +26,10 @@ const HealthCheckService = require('./src/services/HealthCheckService');
 
 // Initialize Express app
 const app = express();
+
+// Trust proxy for Fly.io deployment
+app.set('trust proxy', true);
+
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
