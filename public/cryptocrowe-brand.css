@@ -1,0 +1,631 @@
+/* ========================================
+   CryptoCrowe - Premium Trading Platform
+   Brand Identity & Visual System
+   ======================================== */
+
+/* Brand Color System */
+:root {
+    /* Primary Ocean Blues */
+    --crow-primary: #00a8ff;
+    --crow-primary-dark: #0066cc;
+    --crow-primary-darker: #003d7a;
+    --crow-primary-light: #4dd0e1;
+    --crow-primary-lighter: #a6e3ff;
+
+    /* Accent Colors - Electric Cyan */
+    --crow-accent: #00ffff;
+    --crow-accent-dark: #00cccc;
+    --crow-accent-glow: rgba(0, 255, 255, 0.6);
+
+    /* Success & Profit Green */
+    --crow-profit: #00ff88;
+    --crow-profit-dark: #00cc6a;
+    --crow-profit-glow: rgba(0, 255, 136, 0.4);
+
+    /* Loss & Danger Red */
+    --crow-loss: #ff0055;
+    --crow-loss-dark: #cc0044;
+    --crow-loss-glow: rgba(255, 0, 85, 0.4);
+
+    /* Premium Purple */
+    --crow-premium: #8b5cf6;
+    --crow-premium-dark: #7c3aed;
+    --crow-premium-glow: rgba(139, 92, 246, 0.4);
+
+    /* Dark Theme Base */
+    --crow-bg-darkest: #000511;
+    --crow-bg-darker: #001122;
+    --crow-bg-dark: #001833;
+    --crow-bg-medium: #002244;
+    --crow-bg-light: #003366;
+
+    /* Glass Effects */
+    --crow-glass: rgba(0, 168, 255, 0.05);
+    --crow-glass-hover: rgba(0, 168, 255, 0.1);
+    --crow-glass-border: rgba(0, 168, 255, 0.2);
+
+    /* Text Colors */
+    --crow-text-primary: #ffffff;
+    --crow-text-secondary: #a6e3ff;
+    --crow-text-muted: #6b8cae;
+
+    /* Gradients */
+    --crow-gradient-primary: linear-gradient(135deg, #003d7a 0%, #00a8ff 50%, #00ffff 100%);
+    --crow-gradient-success: linear-gradient(135deg, #00cc6a 0%, #00ff88 100%);
+    --crow-gradient-premium: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+    --crow-gradient-mesh: radial-gradient(ellipse at top left, #00a8ff20 0%, transparent 50%),
+                          radial-gradient(ellipse at bottom right, #00ffff20 0%, transparent 50%),
+                          radial-gradient(ellipse at center, #8b5cf620 0%, transparent 70%);
+
+    /* Shadows */
+    --crow-shadow-sm: 0 2px 8px rgba(0, 168, 255, 0.1);
+    --crow-shadow-md: 0 8px 24px rgba(0, 168, 255, 0.15);
+    --crow-shadow-lg: 0 20px 40px rgba(0, 168, 255, 0.2);
+    --crow-shadow-xl: 0 30px 60px rgba(0, 168, 255, 0.3);
+    --crow-shadow-glow: 0 0 40px rgba(0, 255, 255, 0.4);
+
+    /* Typography Scale */
+    --crow-font-xs: 0.75rem;
+    --crow-font-sm: 0.875rem;
+    --crow-font-base: 1rem;
+    --crow-font-lg: 1.125rem;
+    --crow-font-xl: 1.5rem;
+    --crow-font-2xl: 2rem;
+    --crow-font-3xl: 3rem;
+    --crow-font-4xl: 4rem;
+}
+
+/* Global Reset with CryptoCrowe Style */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--crow-bg-darkest);
+    color: var(--crow-text-primary);
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Animated Background Mesh */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--crow-gradient-mesh);
+    animation: meshFloat 20s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes meshFloat {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    33% { transform: scale(1.1) rotate(1deg); }
+    66% { transform: scale(0.95) rotate(-1deg); }
+}
+
+/* CryptoCrowe Logo & Branding */
+.crow-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 900;
+    font-size: var(--crow-font-xl);
+    background: var(--crow-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+}
+
+.crow-logo::before {
+    content: '🦅';
+    font-size: var(--crow-font-2xl);
+    filter: drop-shadow(0 0 20px var(--crow-accent-glow));
+}
+
+/* Header with Glass Morphism */
+.crow-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(180deg,
+        rgba(0, 24, 51, 0.95) 0%,
+        rgba(0, 24, 51, 0.8) 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--crow-glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    z-index: 1000;
+    box-shadow: var(--crow-shadow-lg);
+}
+
+/* Navigation */
+.crow-nav {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.crow-nav-item {
+    color: var(--crow-text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 8px 0;
+}
+
+.crow-nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--crow-gradient-primary);
+    transition: width 0.3s ease;
+}
+
+.crow-nav-item:hover {
+    color: var(--crow-accent);
+}
+
+.crow-nav-item:hover::after {
+    width: 100%;
+}
+
+/* Main Container */
+.crow-container {
+    max-width: 1600px;
+    margin: 100px auto 0;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Cards with Glow Effect */
+.crow-card {
+    background: linear-gradient(135deg,
+        rgba(0, 168, 255, 0.05) 0%,
+        rgba(0, 36, 68, 0.4) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.crow-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        var(--crow-accent-glow) 0%,
+        transparent 40%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.crow-card:hover::before {
+    opacity: 1;
+}
+
+.crow-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--crow-accent);
+    box-shadow: var(--crow-shadow-xl), var(--crow-shadow-glow);
+}
+
+/* Buttons */
+.crow-btn {
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: var(--crow-font-base);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.crow-btn-primary {
+    background: var(--crow-gradient-primary);
+    color: var(--crow-text-primary);
+    box-shadow: var(--crow-shadow-md);
+}
+
+.crow-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.crow-btn-primary:hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.crow-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--crow-shadow-lg), 0 0 30px var(--crow-accent-glow);
+}
+
+.crow-btn-secondary {
+    background: transparent;
+    border: 2px solid var(--crow-primary);
+    color: var(--crow-primary-light);
+}
+
+.crow-btn-secondary:hover {
+    background: var(--crow-glass-hover);
+    border-color: var(--crow-accent);
+    color: var(--crow-accent);
+    box-shadow: var(--crow-shadow-md);
+}
+
+/* Trading Stats Cards */
+.crow-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.crow-stat-card {
+    background: linear-gradient(135deg,
+        var(--crow-glass) 0%,
+        rgba(0, 36, 68, 0.3) 100%);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.crow-stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--crow-accent-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.crow-stat-card:hover::after {
+    opacity: 0.3;
+}
+
+.crow-stat-label {
+    color: var(--crow-text-muted);
+    font-size: var(--crow-font-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.crow-stat-value {
+    font-size: var(--crow-font-2xl);
+    font-weight: 700;
+    background: var(--crow-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.crow-stat-change {
+    font-size: var(--crow-font-sm);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.crow-stat-change.positive {
+    color: var(--crow-profit);
+}
+
+.crow-stat-change.negative {
+    color: var(--crow-loss);
+}
+
+/* Trading Chart Container */
+.crow-chart-container {
+    background: linear-gradient(135deg,
+        rgba(0, 24, 51, 0.9) 0%,
+        rgba(0, 36, 68, 0.6) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 20px;
+    padding: 24px;
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+.crow-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.crow-chart-title {
+    font-size: var(--crow-font-xl);
+    font-weight: 700;
+    background: var(--crow-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Market List */
+.crow-market-list {
+    background: var(--crow-glass);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.crow-market-item {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 168, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.crow-market-item:hover {
+    background: var(--crow-glass-hover);
+    padding-left: 24px;
+}
+
+.crow-market-item:last-child {
+    border-bottom: none;
+}
+
+.crow-market-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.crow-market-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--crow-gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--crow-font-lg);
+    color: var(--crow-text-primary);
+}
+
+.crow-market-name {
+    font-weight: 600;
+    color: var(--crow-text-primary);
+}
+
+.crow-market-symbol {
+    font-size: var(--crow-font-sm);
+    color: var(--crow-text-muted);
+}
+
+.crow-price-value {
+    font-size: var(--crow-font-lg);
+    font-weight: 600;
+    color: var(--crow-text-primary);
+}
+
+.crow-price-change {
+    font-size: var(--crow-font-sm);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.crow-price-change.positive {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--crow-profit);
+}
+
+.crow-price-change.negative {
+    background: rgba(255, 0, 85, 0.1);
+    color: var(--crow-loss);
+}
+
+/* Order Form */
+.crow-order-form {
+    background: linear-gradient(135deg,
+        var(--crow-glass) 0%,
+        rgba(0, 36, 68, 0.4) 100%);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.crow-form-group {
+    margin-bottom: 20px;
+}
+
+.crow-form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--crow-text-secondary);
+    font-size: var(--crow-font-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crow-form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0, 168, 255, 0.05);
+    border: 1px solid var(--crow-glass-border);
+    border-radius: 8px;
+    color: var(--crow-text-primary);
+    font-size: var(--crow-font-base);
+    transition: all 0.3s ease;
+}
+
+.crow-form-input:focus {
+    outline: none;
+    border-color: var(--crow-accent);
+    background: rgba(0, 168, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+}
+
+/* Live Indicator */
+.crow-live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--crow-profit);
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: livePulse 2s infinite;
+}
+
+@keyframes livePulse {
+    0% {
+        box-shadow: 0 0 0 0 var(--crow-profit-glow);
+    }
+    70% {
+        box-shadow: 0 0 0 10px transparent;
+    }
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+/* Notifications */
+.crow-notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg,
+        rgba(0, 168, 255, 0.95) 0%,
+        rgba(0, 36, 68, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--crow-accent);
+    border-radius: 12px;
+    color: var(--crow-text-primary);
+    box-shadow: var(--crow-shadow-xl), var(--crow-shadow-glow);
+    animation: slideInRight 0.3s ease;
+    z-index: 2000;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Loading Animation */
+.crow-loader {
+    width: 60px;
+    height: 60px;
+    border: 3px solid var(--crow-glass-border);
+    border-top-color: var(--crow-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--crow-bg-darker);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--crow-gradient-primary);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--crow-accent);
+}
+
+/* Premium Badge */
+.crow-premium-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--crow-gradient-premium);
+    border-radius: 20px;
+    font-size: var(--crow-font-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: var(--crow-shadow-md);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .crow-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crow-header {
+        padding: 0 15px;
+    }
+
+    .crow-container {
+        padding: 0 15px;
+    }
+}

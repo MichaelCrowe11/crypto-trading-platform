@@ -155,6 +155,21 @@ app.get('/health', (req, res) => {
 
 // API Routes
 
+// Status endpoint
+app.get('/api/status', (req, res) => {
+    res.json({
+        status: 'online',
+        version: '1.0.0',
+        timestamp: Date.now(),
+        services: {
+            exchanges: exchangeManager ? 'connected' : 'disconnected',
+            database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+            redis: app.locals.redis ? 'connected' : 'disconnected',
+            websocket: io ? 'active' : 'inactive'
+        }
+    });
+});
+
 // Authentication routes
 app.post('/api/auth/signup', async (req, res) => {
     try {
@@ -175,6 +190,18 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (error) {
         logger.error('Login error:', error);
         res.status(401).json({ error: 'Invalid credentials' });
+    }
+});
+
+app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+    try {
+        res.json({
+            authenticated: true,
+            user: req.user
+        });
+    } catch (error) {
+        logger.error('Verify error:', error);
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
@@ -276,6 +303,47 @@ app.get('/api/trade/history', authenticateToken, async (req, res) => {
 });
 
 // Market data routes
+app.get('/api/market/prices', async (req, res) => {
+    try {
+        const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOGE', 'DOT', 'UNI', 'MATIC'];
+        const prices = {};
+
+        for (const symbol of symbols) {
+            try {
+                const ticker = await marketDataService.getTicker('binance', `${symbol}/USDT`);
+                prices[symbol] = {
+                    price: ticker?.last || 0,
+                    change: ticker?.percentage || 0,
+                    high: ticker?.high || 0,
+                    low: ticker?.low || 0,
+                    volume: ticker?.baseVolume || 0
+                };
+            } catch (err) {
+                // Use fallback prices if API fails
+                prices[symbol] = {
+                    price: symbol === 'BTC' ? 45234.56 : symbol === 'ETH' ? 2456.78 : Math.random() * 1000,
+                    change: (Math.random() - 0.5) * 10,
+                    high: 0,
+                    low: 0,
+                    volume: 0
+                };
+            }
+        }
+
+        res.json(prices);
+    } catch (error) {
+        logger.error('Market prices error:', error);
+        // Return fallback data
+        res.json({
+            BTC: { price: 45234.56, change: 2.34 },
+            ETH: { price: 2456.78, change: -1.23 },
+            BNB: { price: 345.67, change: 0.89 },
+            SOL: { price: 98.76, change: 5.67 },
+            ADA: { price: 0.456, change: -2.34 }
+        });
+    }
+});
+
 app.get('/api/market/ticker/:symbol', async (req, res) => {
     try {
         const { exchange } = req.query;

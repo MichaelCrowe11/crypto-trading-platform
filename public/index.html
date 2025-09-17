@@ -20,11 +20,18 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- TradingView Widget -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <!-- Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="cryptocrowe-brand.css">
+    <link rel="stylesheet" href="animations.css">
 
     <style>
         :root {
@@ -993,5 +1000,45 @@
 
     <!-- CryptoCrowe Platform Scripts -->
     <script src="cryptocrowe.js"></script>
+    <script src="onboarding.js"></script>
+    <script src="tradingview-integration.js"></script>
+
+    <!-- Initialize Enhanced Features -->
+    <script>
+        // Initialize TradingView chart when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Replace basic chart with TradingView
+            const chartContainer = document.getElementById('priceChart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div id="tradingview_main" style="height: 100%;"></div>';
+                initializeTradingView('tradingview_main', 'BINANCE:BTCUSDT');
+            }
+
+            // Add animation classes to elements
+            document.querySelectorAll('.stat-card').forEach((card, index) => {
+                card.classList.add('card-hover', 'stagger-item');
+            });
+
+            document.querySelectorAll('.market-item').forEach((item, index) => {
+                item.classList.add('micro-interaction');
+            });
+
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.add('btn-animated');
+            });
+
+            // Add live indicators
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                const liveIndicator = document.createElement('div');
+                liveIndicator.className = 'live-indicator active';
+                liveIndicator.style.position = 'absolute';
+                liveIndicator.style.top = '10px';
+                liveIndicator.style.right = '10px';
+                statsGrid.style.position = 'relative';
+                statsGrid.appendChild(liveIndicator);
+            }
+        });
+    </script>
 </body>
 </html>
