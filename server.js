@@ -572,10 +572,12 @@ async function startServer() {
         healthCheckService.initialize();
         app.locals.io = io;
 
-        server.listen(PORT, '0.0.0.0', () => {
-            logger.info(`CryptoCrowe server running on port ${PORT}`);
+        const HOST = '0.0.0.0';
+        server.listen(PORT, HOST, () => {
+            logger.info(`CryptoCrowe server running on ${HOST}:${PORT}`);
             logger.info(`WebSocket server ready`);
-            logger.info(`Health check: http://localhost:${PORT}/health`);
+            logger.info(`Health check: http://${HOST}:${PORT}/health`);
+            logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
         });
     } catch (error) {
         logger.error('Server startup error:', error);
