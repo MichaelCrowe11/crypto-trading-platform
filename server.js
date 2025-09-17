@@ -27,8 +27,8 @@ const HealthCheckService = require('./src/services/HealthCheckService');
 // Initialize Express app
 const app = express();
 
-// Trust proxy for Fly.io deployment
-app.set('trust proxy', true);
+// Trust proxy for Fly.io deployment - set to specific number for security
+app.set('trust proxy', 1);
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -103,11 +103,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://s3.tradingview.com", "https://unpkg.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "wss:", "https:"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            connectSrc: ["'self'", "wss:", "https:", "https://api.coingecko.com", "https://stream.binance.com"],
+            frameSrc: ["'self'", "https://www.tradingview.com"],
+            childSrc: ["'self'", "blob:", "https://www.tradingview.com"],
         },
     },
 }));
