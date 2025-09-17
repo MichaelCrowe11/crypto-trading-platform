@@ -28,13 +28,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Demo Button
-    const demoBtn = document.querySelector('button[onclick*="startDemo"]');
-    if (demoBtn) {
-        demoBtn.removeAttribute('onclick');
-        demoBtn.addEventListener('click', function() {
-            console.log('Start Demo clicked');
-            startDemo();
+    // Start Real Trading Button
+    const startTradingBtn = document.getElementById('startTradingBtn');
+    if (startTradingBtn) {
+        startTradingBtn.addEventListener('click', function() {
+            console.log('Start Real Trading clicked');
+            startRealTrading();
         });
     }
 
@@ -197,18 +196,26 @@ async function connectPhantom() {
     showToast('Phantom wallet integration coming soon!', 'info');
 }
 
-function startDemo() {
-    console.log('Starting demo mode...');
-    showToast('Demo mode activated! Explore the platform with sample data.', 'success');
+function startRealTrading() {
+    console.log('Starting real trading mode...');
 
-    // Load demo data
-    loadDemoData();
+    // Check if user is authenticated
+    if (!localStorage.getItem('authToken')) {
+        showToast('Please connect your wallet to start trading', 'warning');
+        document.getElementById('connectWallet').click();
+        return;
+    }
+
+    showToast('Real trading mode activated. All trades use real funds!', 'success');
 
     // Hide welcome section
     const welcomeSection = document.querySelector('.welcome-section');
     if (welcomeSection) {
         welcomeSection.style.display = 'none';
     }
+
+    // Start loading real market data
+    loadRealMarketData();
 }
 
 function showGuide() {
@@ -355,20 +362,7 @@ function updateWalletUI(address) {
     }
 }
 
-function loadDemoData() {
-    // Add demo trades to activity
-    const demoActivities = [
-        'BUY 0.5 BTC @ $45,234',
-        'SELL 2.0 ETH @ $2,456',
-        'Bot: Limit order filled - BNB',
-        'Market alert: BTC +5.2%',
-        'Portfolio rebalanced'
-    ];
-
-    demoActivities.forEach(activity => {
-        addActivity(activity);
-    });
-}
+// Demo data removed - platform uses real trading data only
 
 function addActivity(message) {
     const activityList = document.getElementById('activityList');
@@ -412,13 +406,98 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+async function loadRealMarketData() {
+    console.log('Loading real market data...');
+
+    try {
+        const response = await fetch('/api/market/prices');
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+            throw new Error(data.message || 'Market data unavailable');
+        }
+
+        updateMarketList(data);
+        showToast('Real market data loaded successfully', 'success');
+
+    } catch (error) {
+        console.error('Failed to load real market data:', error);
+        showToast(`Market data error: ${error.message}`, 'error');
+
+        // Show error state instead of fallback data
+        const marketList = document.getElementById('marketList');
+        if (marketList) {
+            marketList.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Market Data Unavailable</h3>
+                    <p>All market data sources are currently unavailable.</p>
+                    <button onclick="loadRealMarketData()" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+function updateMarketList(data) {
+    const marketList = document.getElementById('marketList');
+    if (!marketList) return;
+
+    marketList.innerHTML = '';
+
+    // Only use real data - no fallbacks
+    const realSymbols = Object.keys(data);
+
+    if (realSymbols.length === 0) {
+        marketList.innerHTML = `
+            <div class="no-data-state">
+                <i class="fas fa-database"></i>
+                <p>No market data available</p>
+            </div>
+        `;
+        return;
+    }
+
+    realSymbols.forEach(symbol => {
+        const market = data[symbol];
+        const item = document.createElement('div');
+        item.className = 'market-item';
+        item.onclick = () => selectMarket(`${symbol}/USDT`);
+
+        item.innerHTML = `
+            <div class="market-info">
+                <div class="market-icon">${symbol[0]}</div>
+                <div>
+                    <div class="market-name">${symbol}</div>
+                    <div class="market-symbol">${symbol}/USDT</div>
+                </div>
+            </div>
+            <div class="market-price">
+                <div class="price-value">$${market.price.toLocaleString()}</div>
+                <div class="price-change ${market.change >= 0 ? 'positive' : 'negative'}">
+                    ${market.change >= 0 ? '+' : ''}${market.change.toFixed(2)}%
+                </div>
+            </div>
+        `;
+
+        marketList.appendChild(item);
+    });
+}
+
 // Export functions for global use
 window.connectWallet = connectWallet;
 window.connectMetaMask = connectMetaMask;
 window.connectWalletConnect = connectWalletConnect;
 window.connectCoinbase = connectCoinbase;
 window.connectPhantom = connectPhantom;
-window.startDemo = startDemo;
+window.startRealTrading = startRealTrading;
 window.showGuide = showGuide;
 window.refreshMarkets = refreshMarkets;
 window.changeTimeframe = changeTimeframe;
@@ -428,6 +507,5 @@ window.showAutomationSettings = showAutomationSettings;
 window.clearActivity = clearActivity;
 window.closeModal = closeModal;
 window.showToast = showToast;
-window.loadMarketData = window.loadMarketData || async function() {
-    console.log('Loading market data...');
-};
+window.loadRealMarketData = loadRealMarketData;
+window.updateMarketList = updateMarketList;

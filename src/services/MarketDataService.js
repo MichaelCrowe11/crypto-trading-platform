@@ -242,32 +242,12 @@ class MarketDataService {
                         }));
                     }
                 } catch (err) {
-                    console.log(`OHLCV fetch failed for ${exchange}:${symbol}, using fallback`);
+                    console.error(`OHLCV fetch failed for ${exchange}:${symbol}:`, err.message);
                 }
             }
 
-            // Generate mock OHLCV data
-            const now = Date.now();
-            const interval = timeframe === '1h' ? 3600000 : timeframe === '5m' ? 300000 : 60000;
-            const basePrice = symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 2800 : 100;
-
-            return Array.from({ length: limit }, (_, i) => {
-                const timestamp = now - (limit - i) * interval;
-                const variation = (Math.random() - 0.5) * basePrice * 0.02;
-                const open = basePrice + variation;
-                const close = basePrice + (Math.random() - 0.5) * basePrice * 0.02;
-                const high = Math.max(open, close) + Math.random() * basePrice * 0.01;
-                const low = Math.min(open, close) - Math.random() * basePrice * 0.01;
-
-                return {
-                    timestamp,
-                    open,
-                    high,
-                    low,
-                    close,
-                    volume: Math.random() * 1000000
-                };
-            });
+            // No fallback data - throw error if all exchange sources fail
+            throw new Error(`No OHLCV data available for ${symbol} on any configured exchange`);
         } catch (error) {
             console.error(`Failed to get OHLCV for ${symbol}:`, error);
             return [];
@@ -286,40 +266,33 @@ class MarketDataService {
                         return ticker;
                     }
                 } catch (err) {
-                    console.log(`Exchange fetch failed for ${exchange}:${symbol}, using fallback`);
+                    console.error(`Exchange fetch failed for ${exchange}:${symbol}:`, err.message);
                 }
             }
 
-            // Fallback to public APIs
-            const prices = await this.getAggregatedPrices([symbol]);
-            if (prices[symbol]) {
-                return {
-                    symbol: symbol,
-                    last: prices[symbol].price,
-                    bid: prices[symbol].price * 0.999,
-                    ask: prices[symbol].price * 1.001,
-                    timestamp: Date.now()
-                };
+            // Try fallback to public APIs (CoinMarketCap/CoinGecko)
+            try {
+                const prices = await this.getAggregatedPrices([symbol.split('/')[0]]);
+                const baseSymbol = symbol.split('/')[0];
+                if (prices[baseSymbol]) {
+                    return {
+                        symbol: symbol,
+                        last: prices[baseSymbol].price,
+                        bid: prices[baseSymbol].price * 0.999,
+                        ask: prices[baseSymbol].price * 1.001,
+                        timestamp: Date.now()
+                    };
+                }
+            } catch (publicApiError) {
+                console.error(`Public API fallback failed for ${symbol}:`, publicApiError.message);
             }
 
-            // Return mock data if all else fails
-            return {
-                symbol: symbol,
-                last: symbol.includes('BTC') ? 45000 : symbol.includes('ETH') ? 2800 : 100,
-                bid: symbol.includes('BTC') ? 44950 : symbol.includes('ETH') ? 2795 : 99.5,
-                ask: symbol.includes('BTC') ? 45050 : symbol.includes('ETH') ? 2805 : 100.5,
-                timestamp: Date.now()
-            };
+            // No fallback data - return null if all sources fail
+            return null;
         } catch (error) {
             console.error(`Failed to get ticker for ${symbol} from ${exchange}:`, error);
-            // Return mock data on error
-            return {
-                symbol: symbol,
-                last: 45000,
-                bid: 44950,
-                ask: 45050,
-                timestamp: Date.now()
-            };
+            // No fallback data - throw error
+            throw error;
         }
     }
 

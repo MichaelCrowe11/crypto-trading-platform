@@ -320,27 +320,18 @@ app.get('/api/market/prices', async (req, res) => {
                     volume: ticker?.baseVolume || 0
                 };
             } catch (err) {
-                // Use fallback prices if API fails
-                prices[symbol] = {
-                    price: symbol === 'BTC' ? 45234.56 : symbol === 'ETH' ? 2456.78 : Math.random() * 1000,
-                    change: (Math.random() - 0.5) * 10,
-                    high: 0,
-                    low: 0,
-                    volume: 0
-                };
+                // Skip symbol if API fails - no fallback data
+                logger.error(`Failed to fetch price for ${symbol}:`, err.message);
             }
         }
 
         res.json(prices);
     } catch (error) {
         logger.error('Market prices error:', error);
-        // Return fallback data
-        res.json({
-            BTC: { price: 45234.56, change: 2.34 },
-            ETH: { price: 2456.78, change: -1.23 },
-            BNB: { price: 345.67, change: 0.89 },
-            SOL: { price: 98.76, change: 5.67 },
-            ADA: { price: 0.456, change: -2.34 }
+        // Return error status if all market data sources fail
+        res.status(503).json({
+            error: 'Market data unavailable',
+            message: 'All market data sources are currently unavailable'
         });
     }
 });
