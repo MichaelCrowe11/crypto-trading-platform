@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Trading Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .data { margin: 10px 0; padding: 10px; border: 1px solid #0f0; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+    </style>
+</head>
+<body>
+    <h1>🔴 LIVE TRADING TEST PAGE</h1>
+    <div id="results"></div>
+
+    <script>
+        async function testAPIs() {
+            const results = document.getElementById('results');
+
+            // Test 1: Live Status
+            try {
+                const statusRes = await fetch('/api/live/status');
+                const statusData = await statusRes.json();
+                results.innerHTML += `
+                    <div class="data success">
+                        <h2>✅ LIVE STATUS:</h2>
+                        <pre>${JSON.stringify(statusData, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                results.innerHTML += `<div class="data error">❌ Status API Error: ${e}</div>`;
+            }
+
+            // Test 2: Balance
+            try {
+                const balanceRes = await fetch('/api/live/balance');
+                const balanceData = await balanceRes.json();
+                results.innerHTML += `
+                    <div class="data success">
+                        <h2>✅ BALANCE:</h2>
+                        <pre>${JSON.stringify(balanceData, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                results.innerHTML += `<div class="data error">❌ Balance API Error: ${e}</div>`;
+            }
+
+            // Test 3: Market Ticker
+            try {
+                const tickerRes = await fetch('/api/market/ticker/BTC-USD');
+                const tickerData = await tickerRes.json();
+                results.innerHTML += `
+                    <div class="data success">
+                        <h2>✅ BTC TICKER:</h2>
+                        <pre>${JSON.stringify(tickerData, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                results.innerHTML += `<div class="data error">❌ Ticker API Error: ${e}</div>`;
+            }
+
+            // Test 4: Debug Credentials
+            try {
+                const credsRes = await fetch('/api/debug/credentials');
+                const credsData = await credsRes.json();
+                results.innerHTML += `
+                    <div class="data success">
+                        <h2>✅ CREDENTIALS:</h2>
+                        <pre>${JSON.stringify(credsData, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (e) {
+                results.innerHTML += `<div class="data error">❌ Credentials API Error: ${e}</div>`;
+            }
+        }
+
+        // Run tests on load
+        testAPIs();
+
+        // Auto refresh every 3 seconds
+        setInterval(testAPIs, 3000);
+    </script>
+</body>
+</html>
