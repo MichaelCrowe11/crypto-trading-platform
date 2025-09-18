@@ -1,0 +1,275 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <defs>
+    <!-- Advanced Gradients -->
+    <linearGradient id="crowePremiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001a2e;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#003d7a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00a8ff;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#00ffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.9" />
+    </linearGradient>
+
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#00a8ff;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#001a2e;stop-opacity:0" />
+    </radialGradient>
+
+    <linearGradient id="metallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e6f3ff;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#b3d9ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#66bfff;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#0099ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0066cc;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Advanced Filters -->
+    <filter id="premiumGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feOffset dx="0" dy="0" result="offsetblur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#00ffff" flood-opacity="0.3"/>
+    </filter>
+
+    <filter id="innerGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feComposite in="coloredBlur" in2="SourceAlpha" operator="in" result="innerGlow"/>
+      <feMerge>
+        <feMergeNode in="innerGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Geometric Patterns -->
+    <pattern id="hexPattern" patternUnits="userSpaceOnUse" width="40" height="34.64">
+      <polygon points="20,0 40,17.32 20,34.64 0,17.32"
+               fill="none"
+               stroke="url(#crowePremiumGradient)"
+               stroke-width="0.5"
+               opacity="0.2"/>
+    </pattern>
+
+    <!-- Animation Definitions -->
+    <animateTransform id="rotateCenter"
+                      attributeName="transform"
+                      attributeType="XML"
+                      type="rotate"
+                      from="0 150 150"
+                      to="360 150 150"
+                      dur="20s"
+                      repeatCount="indefinite"/>
+  </defs>
+
+  <!-- Background Elements -->
+  <circle cx="150" cy="150" r="145" fill="url(#hexPattern)" opacity="0.1"/>
+  <circle cx="150" cy="150" r="120" fill="url(#centerGlow)" opacity="0.3"/>
+
+  <!-- Outer Ring Structure -->
+  <circle cx="150" cy="150" r="135"
+          fill="none"
+          stroke="url(#crowePremiumGradient)"
+          stroke-width="2"
+          opacity="0.6"
+          filter="url(#premiumGlow)"/>
+
+  <circle cx="150" cy="150" r="125"
+          fill="none"
+          stroke="url(#metallic)"
+          stroke-width="1"
+          opacity="0.8"/>
+
+  <!-- Main Crow Design -->
+  <g transform="translate(150, 150)" filter="url(#dropShadow)">
+
+    <!-- Crow Body (Geometric Abstraction) -->
+    <path d="M -45 15
+             Q -50 -25 -30 -45
+             L -15 -50
+             Q 0 -52 15 -50
+             L 30 -45
+             Q 50 -25 45 15
+             L 40 35
+             Q 30 50 0 55
+             Q -30 50 -40 35 Z"
+          fill="url(#crowePremiumGradient)"
+          filter="url(#innerGlow)"/>
+
+    <!-- Wing Design (Angular Cryptocurrency Symbol) -->
+    <path d="M -35 0
+             L -65 -15
+             L -75 -10
+             L -80 -5
+             L -85 0
+             L -80 10
+             L -75 15
+             L -65 20
+             L -50 15
+             L -35 5 Z"
+          fill="url(#metallic)"
+          opacity="0.9"
+          filter="url(#premiumGlow)"/>
+
+    <path d="M 35 0
+             L 65 -15
+             L 75 -10
+             L 80 -5
+             L 85 0
+             L 80 10
+             L 75 15
+             L 65 20
+             L 50 15
+             L 35 5 Z"
+          fill="url(#metallic)"
+          opacity="0.9"
+          filter="url(#premiumGlow)"/>
+
+    <!-- Crypto-Tech Crown -->
+    <g transform="translate(0, -50)">
+      <path d="M -20 -10
+               L -15 -20
+               L -10 -15
+               L -5 -22
+               L 0 -15
+               L 5 -22
+               L 10 -15
+               L 15 -20
+               L 20 -10"
+            fill="none"
+            stroke="url(#crowePremiumGradient)"
+            stroke-width="3"
+            stroke-linecap="round"
+            filter="url(#premiumGlow)"/>
+
+      <!-- Digital Nodes -->
+      <circle cx="-15" cy="-20" r="2" fill="#00ffff" filter="url(#premiumGlow)"/>
+      <circle cx="0" cy="-22" r="3" fill="#00ffff" filter="url(#premiumGlow)"/>
+      <circle cx="15" cy="-20" r="2" fill="#00ffff" filter="url(#premiumGlow)"/>
+    </g>
+
+    <!-- Eyes (Intelligent AI Glow) -->
+    <circle cx="-15" cy="-30" r="4" fill="#ffffff" opacity="0.9"/>
+    <circle cx="15" cy="-30" r="4" fill="#ffffff" opacity="0.9"/>
+    <circle cx="-15" cy="-30" r="3" fill="#00ffff" filter="url(#premiumGlow)">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="15" cy="-30" r="3" fill="#00ffff" filter="url(#premiumGlow)">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Advanced Beak (Geometric) -->
+    <path d="M 0 -25
+             L -8 -15
+             L 0 -10
+             L 8 -15 Z"
+          fill="url(#metallic)"
+          filter="url(#innerGlow)"/>
+
+    <!-- Tail Feathers (Blockchain Links) -->
+    <g transform="translate(0, 45)">
+      <path d="M -12 0 L -18 20 L -12 18 L -8 22 L -4 18 L 0 20 L 4 18 L 8 22 L 12 18 L 18 20 L 12 0"
+            fill="url(#crowePremiumGradient)"
+            opacity="0.8"/>
+
+      <!-- Connection Lines -->
+      <line x1="-12" y1="10" x2="12" y2="10" stroke="url(#metallic)" stroke-width="1" opacity="0.6"/>
+      <line x1="-8" y1="15" x2="8" y2="15" stroke="url(#metallic)" stroke-width="1" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- Tech Circuit Elements (Animated) -->
+  <g opacity="0.4" filter="url(#premiumGlow)">
+    <animateTransform attributeName="transform"
+                      type="rotate"
+                      values="0 150 150;360 150 150"
+                      dur="30s"
+                      repeatCount="indefinite"/>
+
+    <!-- Circuit Nodes -->
+    <circle cx="50" cy="150" r="3" fill="#00ffff"/>
+    <circle cx="250" cy="150" r="3" fill="#00ffff"/>
+    <circle cx="150" cy="50" r="3" fill="#00ffff"/>
+    <circle cx="150" cy="250" r="3" fill="#00ffff"/>
+
+    <!-- Connection Lines -->
+    <line x1="53" y1="150" x2="85" y2="150" stroke="url(#crowePremiumGradient)" stroke-width="2"/>
+    <line x1="215" y1="150" x2="247" y2="150" stroke="url(#crowePremiumGradient)" stroke-width="2"/>
+    <line x1="150" y1="53" x2="150" y2="85" stroke="url(#crowePremiumGradient)" stroke-width="2"/>
+    <line x1="150" y1="215" x2="150" y2="247" stroke="url(#crowePremiumGradient)" stroke-width="2"/>
+
+    <!-- Data Flow Indicators -->
+    <circle cx="70" cy="150" r="2" fill="#ffffff">
+      <animate attributeName="cx" values="53;85;53" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="230" cy="150" r="2" fill="#ffffff">
+      <animate attributeName="cx" values="247;215;247" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- Premium Typography -->
+  <text x="150" y="260"
+        font-family="'Inter', sans-serif"
+        font-size="24"
+        font-weight="800"
+        text-anchor="middle"
+        fill="url(#crowePremiumGradient)"
+        filter="url(#premiumGlow)"
+        letter-spacing="3px">
+    CRYPTOCROWE
+  </text>
+
+  <text x="150" y="280"
+        font-family="'Inter', sans-serif"
+        font-size="10"
+        font-weight="300"
+        text-anchor="middle"
+        fill="url(#metallic)"
+        opacity="0.8"
+        letter-spacing="4px">
+    AUTONOMOUS TRADING
+  </text>
+
+  <!-- Floating Particles (Luxury Effect) -->
+  <g opacity="0.6">
+    <circle cx="80" cy="80" r="1" fill="#00ffff">
+      <animateTransform attributeName="transform"
+                        type="translate"
+                        values="0,0;10,-10;0,0"
+                        dur="4s"
+                        repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="4s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="220" cy="80" r="1" fill="#00a8ff">
+      <animateTransform attributeName="transform"
+                        type="translate"
+                        values="0,0;-8,12;0,0"
+                        dur="5s"
+                        repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="5s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="80" cy="220" r="1" fill="#ffffff">
+      <animateTransform attributeName="transform"
+                        type="translate"
+                        values="0,0;15,5;0,0"
+                        dur="6s"
+                        repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="6s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="220" cy="220" r="1" fill="#00ffff">
+      <animateTransform attributeName="transform"
+                        type="translate"
+                        values="0,0;-12,-8;0,0"
+                        dur="3s"
+                        repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

@@ -4,8 +4,10 @@
 const axios = require('axios');
 
 class MarketDataService {
-    constructor(redisClient) {
-        this.redis = redisClient;
+    constructor(exchangeManager) {
+        this.exchangeManager = exchangeManager;
+        this.redis = null;
+        this.cache = new Map();
         this.dataSources = {
             coinmarketcap: {
                 baseUrl: 'https://pro-api.coinmarketcap.com/v1',
@@ -36,10 +38,11 @@ class MarketDataService {
             try {
                 // Check cache first
                 const cacheKey = `price:${symbol}`;
-                const cached = await this.redis.get(cacheKey);
+                const cached = this.cache.get(cacheKey);
+                const now = Date.now();
 
-                if (cached) {
-                    prices[symbol] = JSON.parse(cached);
+                if (cached && (now - cached.timestamp) < 30000) {
+                    prices[symbol] = cached.data;
                     continue;
                 }
 
@@ -76,7 +79,10 @@ class MarketDataService {
                     prices[symbol] = priceData;
 
                     // Cache for 30 seconds
-                    await this.redis.setEx(cacheKey, 30, JSON.stringify(priceData));
+                    this.cache.set(cacheKey, {
+                        data: priceData,
+                        timestamp: Date.now()
+                    });
                 }
 
             } catch (error) {
@@ -214,6 +220,79 @@ class MarketDataService {
         } catch (error) {
             console.error('Historical data fetch error:', error);
             return [];
+        }
+    }
+
+    // Get OHLCV data from exchange
+    async getOHLCV(exchange, symbol, timeframe = '1h', limit = 100) {
+        try {
+            // Try to use exchange manager first
+            if (this.exchangeManager && this.exchangeManager.exchanges && this.exchangeManager.exchanges.has(exchange)) {
+                try {
+                    const exchangeInstance = this.exchangeManager.exchanges.get(exchange);
+                    if (exchangeInstance && exchangeInstance.has && exchangeInstance.has.fetchOHLCV) {
+                        const ohlcv = await exchangeInstance.fetchOHLCV(symbol, timeframe, undefined, limit);
+                        return ohlcv.map(candle => ({
+                            timestamp: candle[0],
+                            open: candle[1],
+                            high: candle[2],
+                            low: candle[3],
+                            close: candle[4],
+                            volume: candle[5]
+                        }));
+                    }
+                } catch (err) {
+                    console.error(`OHLCV fetch failed for ${exchange}:${symbol}:`, err.message);
+                }
+            }
+
+            // No fallback data - throw error if all exchange sources fail
+            throw new Error(`No OHLCV data available for ${symbol} on any configured exchange`);
+        } catch (error) {
+            console.error(`Failed to get OHLCV for ${symbol}:`, error);
+            return [];
+        }
+    }
+
+    // Get ticker data from exchange
+    async getTicker(exchange, symbol) {
+        try {
+            // Try to use exchange manager first (uses your configured API keys)
+            if (this.exchangeManager && this.exchangeManager.exchanges && this.exchangeManager.exchanges.has(exchange)) {
+                try {
+                    const exchangeInstance = this.exchangeManager.exchanges.get(exchange);
+                    if (exchangeInstance && exchangeInstance.has && exchangeInstance.has.fetchTicker) {
+                        const ticker = await exchangeInstance.fetchTicker(symbol);
+                        return ticker;
+                    }
+                } catch (err) {
+                    console.error(`Exchange fetch failed for ${exchange}:${symbol}:`, err.message);
+                }
+            }
+
+            // Try fallback to public APIs (CoinMarketCap/CoinGecko)
+            try {
+                const prices = await this.getAggregatedPrices([symbol.split('/')[0]]);
+                const baseSymbol = symbol.split('/')[0];
+                if (prices[baseSymbol]) {
+                    return {
+                        symbol: symbol,
+                        last: prices[baseSymbol].price,
+                        bid: prices[baseSymbol].price * 0.999,
+                        ask: prices[baseSymbol].price * 1.001,
+                        timestamp: Date.now()
+                    };
+                }
+            } catch (publicApiError) {
+                console.error(`Public API fallback failed for ${symbol}:`, publicApiError.message);
+            }
+
+            // No fallback data - return null if all sources fail
+            return null;
+        } catch (error) {
+            console.error(`Failed to get ticker for ${symbol} from ${exchange}:`, error);
+            // No fallback data - throw error
+            throw error;
         }
     }
 

@@ -22,6 +22,7 @@ const MarketDataService = require('./src/services/MarketDataService');
 const PortfolioService = require('./src/services/PortfolioService');
 const StrategyManager = require('./src/services/StrategyManager');
 const NotificationService = require('./src/services/NotificationService');
+const HealthCheckService = require('./src/services/HealthCheckService');
 
 // LIVE PRODUCTION TRADING
 const LiveTradingPlatform = require('./src/init-live-trading');
@@ -39,6 +40,10 @@ if (coinbaseSecrets.apiKey) {
 
 // Initialize Express app
 const app = express();
+
+// Trust proxy for Fly.io deployment - set to specific number for security
+app.set('trust proxy', 1);
+
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
@@ -112,11 +117,13 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://s3.tradingview.com", "https://unpkg.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "wss:", "https:"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            connectSrc: ["'self'", "wss:", "https:", "https://api.coingecko.com", "https://stream.binance.com"],
+            frameSrc: ["'self'", "https://www.tradingview.com"],
+            childSrc: ["'self'", "blob:", "https://www.tradingview.com"],
         },
     },
 }));
@@ -169,6 +176,21 @@ app.get('/health', (req, res) => {
 
 // API Routes
 
+// Status endpoint
+app.get('/api/status', (req, res) => {
+    res.json({
+        status: 'online',
+        version: '1.0.0',
+        timestamp: Date.now(),
+        services: {
+            exchanges: exchangeManager ? 'connected' : 'disconnected',
+            database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+            redis: app.locals.redis ? 'connected' : 'disconnected',
+            websocket: io ? 'active' : 'inactive'
+        }
+    });
+});
+
 // Authentication routes
 app.post('/api/auth/signup', async (req, res) => {
     try {
@@ -189,6 +211,18 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (error) {
         logger.error('Login error:', error);
         res.status(401).json({ error: 'Invalid credentials' });
+    }
+});
+
+app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+    try {
+        res.json({
+            authenticated: true,
+            user: req.user
+        });
+    } catch (error) {
+        logger.error('Verify error:', error);
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
@@ -290,6 +324,38 @@ app.get('/api/trade/history', authenticateToken, async (req, res) => {
 });
 
 // Market data routes
+app.get('/api/market/prices', async (req, res) => {
+    try {
+        const symbols = ['BTC', 'ETH', 'BNB', 'SOL', 'ADA', 'XRP', 'DOGE', 'DOT', 'UNI', 'MATIC'];
+        const prices = {};
+
+        for (const symbol of symbols) {
+            try {
+                const ticker = await marketDataService.getTicker('binance', `${symbol}/USDT`);
+                prices[symbol] = {
+                    price: ticker?.last || 0,
+                    change: ticker?.percentage || 0,
+                    high: ticker?.high || 0,
+                    low: ticker?.low || 0,
+                    volume: ticker?.baseVolume || 0
+                };
+            } catch (err) {
+                // Skip symbol if API fails - no fallback data
+                logger.error(`Failed to fetch price for ${symbol}:`, err.message);
+            }
+        }
+
+        res.json(prices);
+    } catch (error) {
+        logger.error('Market prices error:', error);
+        // Return error status if all market data sources fail
+        res.status(503).json({
+            error: 'Market data unavailable',
+            message: 'All market data sources are currently unavailable'
+        });
+    }
+});
+
 app.get('/api/market/ticker/:symbol', async (req, res) => {
     try {
         const { exchange } = req.query;
@@ -601,6 +667,7 @@ async function startServer() {
     try {
         await connectDatabases();
 
+<<<<<<< HEAD
         // Initialize LIVE PRODUCTION Trading Platform
         let liveTradingPlatform = null;
 
@@ -633,6 +700,24 @@ async function startServer() {
             if (liveTradingPlatform) {
                 logger.info('💎 LIVE PRODUCTION TRADING ACTIVE - $150 USD');
             }
+=======
+        // Initialize health check service
+        const healthCheckService = new HealthCheckService(app, {
+            exchangeManager,
+            tradingEngine,
+            marketDataService,
+            portfolioService
+        });
+        healthCheckService.initialize();
+        app.locals.io = io;
+
+        const HOST = '0.0.0.0';
+        server.listen(PORT, HOST, () => {
+            logger.info(`CryptoCrowe server running on ${HOST}:${PORT}`);
+            logger.info(`WebSocket server ready`);
+            logger.info(`Health check: http://${HOST}:${PORT}/health`);
+            logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+>>>>>>> e47695f6316316df1995649f331e7ada3bf1bd18
         });
     } catch (error) {
         logger.error('Server startup error:', error);

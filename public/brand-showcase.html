@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoCrowe - Brand Identity</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="cryptocrowe-brand.css">
+
+    <style>
+        .brand-showcase {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-showcase::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff10" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .premium-logo-display {
+            margin-bottom: 3rem;
+            animation: logoFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(1deg); }
+            50% { transform: translateY(-15px) rotate(0deg); }
+            75% { transform: translateY(-10px) rotate(-1deg); }
+        }
+
+        .brand-title {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #003d7a 0%, #00a8ff 50%, #00ffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .brand-tagline {
+            font-size: 1.5rem;
+            color: #00a8ff;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+        .logo-variations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo-variant {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-variant::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .logo-variant:hover::before {
+            left: 100%;
+        }
+
+        .logo-variant:hover {
+            transform: translateY(-10px);
+            border-color: #00ffff;
+            box-shadow: 0 20px 40px rgba(0, 255, 255, 0.3);
+        }
+
+        .variant-title {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .variant-logo {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .variant-description {
+            color: #cccccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .brand-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 61, 122, 0.1);
+            border: 1px solid rgba(0, 168, 255, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: left;
+        }
+
+        .feature-icon {
+            color: #00ffff;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            color: #cccccc;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .back-to-platform {
+            background: linear-gradient(135deg, #003d7a 0%, #00a8ff 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-to-platform:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 168, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .brand-title {
+                font-size: 2.5rem;
+            }
+
+            .brand-tagline {
+                font-size: 1.2rem;
+            }
+
+            .logo-variations {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="brand-showcase">
+        <div class="brand-content">
+            <!-- Premium Logo Display -->
+            <div class="premium-logo-display">
+                <img src="logo-premium.svg" alt="CryptoCrowe Premium Logo" style="width: 300px; height: 300px;">
+            </div>
+
+            <h1 class="brand-title">CryptoCrowe</h1>
+            <p class="brand-tagline">Autonomous Trading • Redefined</p>
+
+            <!-- Logo Variations -->
+            <div class="logo-variations">
+                <div class="logo-variant">
+                    <h3 class="variant-title">Premium Logo</h3>
+                    <div class="variant-logo">
+                        <img src="logo-premium.svg" alt="Premium" style="width: 120px; height: 120px;">
+                    </div>
+                    <p class="variant-description">
+                        Advanced animated SVG with geometric design, tech elements,
+                        luxury effects, and premium typography. Perfect for marketing
+                        materials and landing pages.
+                    </p>
+                </div>
+
+                <div class="logo-variant">
+                    <h3 class="variant-title">Minimal Logo</h3>
+                    <div class="variant-logo">
+                        <img src="logo-minimal.svg" alt="Minimal" style="width: 120px; height: 120px;">
+                    </div>
+                    <p class="variant-description">
+                        Clean, simplified version for app headers, mobile interfaces,
+                        and contexts where clarity is essential. Maintains brand
+                        recognition while optimizing for smaller sizes.
+                    </p>
+                </div>
+
+                <div class="logo-variant">
+                    <h3 class="variant-title">Favicon</h3>
+                    <div class="variant-logo">
+                        <img src="favicon.svg" alt="Favicon" style="width: 64px; height: 64px;">
+                    </div>
+                    <p class="variant-description">
+                        Ultra-minimal 32x32 version designed specifically for browser
+                        tabs, app icons, and other small-scale applications.
+                        Ensures brand visibility at any size.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Brand Features -->
+            <div class="brand-features">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h4 class="feature-title">Ocean Blue Gradient</h4>
+                    <p class="feature-description">
+                        Sophisticated color palette ranging from deep ocean blues
+                        to bright cyans, representing depth, trust, and innovation.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h4 class="feature-title">AI-Powered Symbolism</h4>
+                    <p class="feature-description">
+                        Geometric crow design with glowing AI eyes and tech crown,
+                        symbolizing intelligence and autonomous capabilities.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h4 class="feature-title">Dynamic Animations</h4>
+                    <p class="feature-description">
+                        Subtle floating particles, rotating elements, and pulsing
+                        effects that bring the brand to life in digital environments.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h4 class="feature-title">Blockchain Integration</h4>
+                    <p class="feature-description">
+                        Circuit patterns and connection lines represent the
+                        interconnected nature of cryptocurrency and DeFi.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h4 class="feature-title">Premium Effects</h4>
+                    <p class="feature-description">
+                        Multiple gradients, glow effects, and sophisticated
+                        filtering create a luxury feel appropriate for high-value trading.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h4 class="feature-title">Scalable Design</h4>
+                    <p class="feature-description">
+                        Vector-based SVG format ensures crisp rendering at any size,
+                        from mobile screens to large displays.
+                    </p>
+                </div>
+            </div>
+
+            <a href="index.html" class="back-to-platform">
+                Return to Trading Platform
+            </a>
+        </div>
+    </div>
+</body>
+</html>
