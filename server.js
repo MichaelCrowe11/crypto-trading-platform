@@ -667,7 +667,6 @@ async function startServer() {
     try {
         await connectDatabases();
 
-<<<<<<< HEAD
         // Initialize LIVE PRODUCTION Trading Platform
         let liveTradingPlatform = null;
 
@@ -692,32 +691,30 @@ async function startServer() {
             logger.warn('⚠️  Running in DEMO mode');
         }
 
+        // Initialize health check service if available
+        try {
+            const HealthCheckService = require('./src/services/HealthCheckService');
+            const healthCheckService = new HealthCheckService(app, {
+                exchangeManager,
+                tradingEngine,
+                marketDataService,
+                portfolioService
+            });
+            healthCheckService.initialize();
+        } catch (err) {
+            logger.warn('Health check service not available:', err.message);
+        }
+
+        app.locals.io = io;
+
         server.listen(PORT, '0.0.0.0', () => {
             logger.info(`CryptoCrowe server running on port ${PORT}`);
             logger.info(`WebSocket server ready`);
             logger.info(`Health check: http://localhost:${PORT}/health`);
 
             if (liveTradingPlatform) {
-                logger.info('💎 LIVE PRODUCTION TRADING ACTIVE - $150 USD');
+                logger.info('💎 LIVE PRODUCTION TRADING ACTIVE - $100 USD');
             }
-=======
-        // Initialize health check service
-        const healthCheckService = new HealthCheckService(app, {
-            exchangeManager,
-            tradingEngine,
-            marketDataService,
-            portfolioService
-        });
-        healthCheckService.initialize();
-        app.locals.io = io;
-
-        const HOST = '0.0.0.0';
-        server.listen(PORT, HOST, () => {
-            logger.info(`CryptoCrowe server running on ${HOST}:${PORT}`);
-            logger.info(`WebSocket server ready`);
-            logger.info(`Health check: http://${HOST}:${PORT}/health`);
-            logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
->>>>>>> e47695f6316316df1995649f331e7ada3bf1bd18
         });
     } catch (error) {
         logger.error('Server startup error:', error);
