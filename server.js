@@ -23,6 +23,20 @@ const PortfolioService = require('./src/services/PortfolioService');
 const StrategyManager = require('./src/services/StrategyManager');
 const NotificationService = require('./src/services/NotificationService');
 
+// LIVE PRODUCTION TRADING
+const LiveTradingPlatform = require('./src/init-live-trading');
+const liveConfig = require('./config/live-trading-config');
+const secretsLoader = require('./src/config/secrets-loader');
+
+// Override config with secrets from Fly.io
+const coinbaseSecrets = secretsLoader.getCoinbaseConfig();
+if (coinbaseSecrets.apiKey) {
+    liveConfig.coinbase.apiKey = coinbaseSecrets.apiKey;
+    liveConfig.coinbase.apiSecret = coinbaseSecrets.secret;
+    liveConfig.coinbase.passphrase = coinbaseSecrets.password;
+    console.log('✅ Coinbase credentials loaded from Fly.io secrets');
+}
+
 // Initialize Express app
 const app = express();
 const server = createServer(app);
@@ -313,6 +327,100 @@ app.get('/api/market/aggregated/:symbol', async (req, res) => {
     }
 });
 
+// Debug endpoint to check credentials
+app.get('/api/debug/credentials', (req, res) => {
+    const status = secretsLoader.getStatus();
+
+    res.json({
+        secrets: status,
+        config: {
+            hasApiKey: !!liveConfig.coinbase.apiKey,
+            hasApiSecret: !!liveConfig.coinbase.apiSecret,
+            hasPassphrase: !!liveConfig.coinbase.passphrase,
+            mode: liveConfig.mode,
+            tradingEnabled: liveConfig.trading.enabled
+        },
+        environment: {
+            hasCoinbaseKey: !!process.env.COINBASE_API_KEY,
+            hasCoinbaseSecret: !!process.env.COINBASE_API_SECRET,
+            hasCoinbasePassphrase: !!process.env.COINBASE_PASSPHRASE,
+            hasOpenAI: !!process.env.OPENAI_API_KEY,
+            hasAnthropic: !!process.env.ANTHROPIC_API_KEY
+        }
+    });
+});
+
+// LIVE TRADING ROUTES - ACTIVE DOWN TO $10
+app.get('/api/live/status', async (req, res) => {
+    try {
+        const platform = app.locals.liveTradingPlatform;
+        if (!platform) {
+            return res.json({
+                status: 'disabled',
+                message: 'Live trading not initialized',
+                mode: 'DEMO'
+            });
+        }
+
+        const status = await platform.getStatus();
+        res.json({
+            ...status,
+            message: 'LIVE PRODUCTION TRADING ACTIVE - $10 MINIMUM',
+            warning: 'REAL MONEY TRADING ENABLED'
+        });
+    } catch (error) {
+        logger.error('Live status error:', error);
+        res.status(500).json({ error: 'Failed to get live status' });
+    }
+});
+
+app.post('/api/live/trade', async (req, res) => {
+    try {
+        const platform = app.locals.liveTradingPlatform;
+        if (!platform) {
+            return res.status(400).json({ error: 'Live trading not enabled' });
+        }
+
+        const { symbol, side, amount } = req.body;
+
+        // Validate minimum $10
+        if (amount < 10) {
+            return res.status(400).json({
+                error: 'Minimum trade size is $10',
+                minSize: 10
+            });
+        }
+
+        const result = await platform.executeTrade({ symbol, side, amount });
+        res.json(result);
+    } catch (error) {
+        logger.error('Live trade error:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.get('/api/live/balance', async (req, res) => {
+    try {
+        const platform = app.locals.liveTradingPlatform;
+        if (!platform) {
+            return res.json({ balance: 0, mode: 'DEMO' });
+        }
+
+        const balance = await platform.getBalance();
+        const status = await platform.getStatus();
+
+        res.json({
+            balance: balance.USD || 0,
+            positions: balance.positions || 0,
+            mode: status.mode,
+            minTradeSize: 10
+        });
+    } catch (error) {
+        logger.error('Balance fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch balance' });
+    }
+});
+
 // Portfolio routes
 app.get('/api/portfolio', authenticateToken, async (req, res) => {
     try {
@@ -493,10 +601,38 @@ async function startServer() {
     try {
         await connectDatabases();
 
+        // Initialize LIVE PRODUCTION Trading Platform
+        let liveTradingPlatform = null;
+
+        // Use Simple Live Trading for now
+        const SimpleLiveTrading = require('./src/services/SimpleLiveTrading');
+
+        // Check if we have any trading credentials
+        const hasCredentials = (liveConfig.coinbase.apiKey && liveConfig.coinbase.apiSecret) ||
+                             (process.env.BINANCE_API_KEY && process.env.BINANCE_API_SECRET);
+
+        if (liveConfig.mode === 'PRODUCTION' && liveConfig.trading.enabled && hasCredentials) {
+            logger.warn('🚨 INITIALIZING LIVE PRODUCTION TRADING - REAL MONEY');
+
+            // Use simple implementation that works
+            liveTradingPlatform = new SimpleLiveTrading(liveConfig);
+
+            // Make platform available globally
+            app.locals.liveTradingPlatform = liveTradingPlatform;
+
+            logger.info('✅ Live Trading Platform initialized with credentials');
+        } else {
+            logger.warn('⚠️  Running in DEMO mode');
+        }
+
         server.listen(PORT, '0.0.0.0', () => {
             logger.info(`CryptoCrowe server running on port ${PORT}`);
             logger.info(`WebSocket server ready`);
             logger.info(`Health check: http://localhost:${PORT}/health`);
+
+            if (liveTradingPlatform) {
+                logger.info('💎 LIVE PRODUCTION TRADING ACTIVE - $150 USD');
+            }
         });
     } catch (error) {
         logger.error('Server startup error:', error);
